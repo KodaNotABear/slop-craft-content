@@ -1,10 +1,12 @@
 package dev.epeterson.slopcraft.index;
 
 import dev.epeterson.slopcraft.SlopCraft;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.AxeItem;
 import net.minecraft.world.item.HoeItem;
 import net.minecraft.world.item.Item;
@@ -20,87 +22,78 @@ import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 public class OmniumItems {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(SlopCraft.MOD_ID);
 
-    // Slightly past netherite on every axis; the material is refined FROM
-    // netherite gear via smithing, so it must never feel like a sidegrade.
-    public static final Tier CRUDE_TIER = new SimpleTier(
-            BlockTags.INCORRECT_FOR_NETHERITE_TOOL,
-            2400, 10.0F, 4.5F, 16,
-            () -> Ingredient.of(OmniumItems.CRUDE_OMNIUM.get()));
+    // One lineage, three refinement states. Each tier is a modest step past
+    // the last - a reforge, not a replacement - and repairs with its own state
+    // of the material.
+    public static final Tier CRUDE_TIER = tier(2400, 10.0F, 4.5F, 16, () -> OmniumItems.CRUDE_OMNIUM.get());
+    public static final Tier ATTUNED_TIER = tier(2800, 11.0F, 5.0F, 18, () -> OmniumItems.ATTUNED_OMNIUM.get());
+    public static final Tier OMNIUM_TIER = tier(3600, 12.0F, 5.5F, 22, () -> OmniumItems.OMNIUM.get());
 
     public static final DeferredItem<Item> CRUDE_OMNIUM =
             ITEMS.registerSimpleItem("crude_omnium", new Item.Properties().fireResistant());
+    public static final DeferredItem<Item> ATTUNED_OMNIUM =
+            ITEMS.registerSimpleItem("attuned_omnium", new Item.Properties().fireResistant());
+    public static final DeferredItem<Item> OMNIUM =
+            ITEMS.registerSimpleItem("omnium", new Item.Properties().fireResistant());
 
-    public static final DeferredItem<Item> CRUDE_UPGRADE_SMITHING_TEMPLATE =
-            ITEMS.register("crude_upgrade_smithing_template", () -> new SmithingTemplateItem(
-                    Component.translatable("upgrade.slopcraft.crude_upgrade.applies_to"),
-                    Component.translatable("upgrade.slopcraft.crude_upgrade.ingredients"),
-                    Component.translatable("upgrade.slopcraft.crude_upgrade"),
-                    Component.translatable("upgrade.slopcraft.crude_upgrade.base_slot_description"),
-                    Component.translatable("upgrade.slopcraft.crude_upgrade.additions_slot_description"),
-                    List.of(
-                            ResourceLocation.withDefaultNamespace("item/empty_armor_slot_helmet"),
-                            ResourceLocation.withDefaultNamespace("item/empty_armor_slot_chestplate"),
-                            ResourceLocation.withDefaultNamespace("item/empty_armor_slot_leggings"),
-                            ResourceLocation.withDefaultNamespace("item/empty_armor_slot_boots"),
-                            ResourceLocation.withDefaultNamespace("item/empty_slot_sword"),
-                            ResourceLocation.withDefaultNamespace("item/empty_slot_pickaxe"),
-                            ResourceLocation.withDefaultNamespace("item/empty_slot_axe"),
-                            ResourceLocation.withDefaultNamespace("item/empty_slot_shovel"),
-                            ResourceLocation.withDefaultNamespace("item/empty_slot_hoe")),
-                    List.of(ResourceLocation.withDefaultNamespace("item/empty_slot_ingot"))));
+    public static final DeferredItem<Item> CRUDE_UPGRADE_SMITHING_TEMPLATE = template("crude");
+    public static final DeferredItem<Item> ATTUNED_UPGRADE_SMITHING_TEMPLATE = template("attuned");
+    public static final DeferredItem<Item> OMNIUM_UPGRADE_SMITHING_TEMPLATE = template("omnium");
 
-    public static final DeferredItem<SwordItem> CRUDE_SWORD =
-            ITEMS.register("crude_sword", () -> new SwordItem(CRUDE_TIER, new Item.Properties()
-                    .fireResistant()
-                    .attributes(SwordItem.createAttributes(CRUDE_TIER, 3, -2.4F))));
+    static {
+        gearSet("crude", CRUDE_TIER, OmniumArmorMaterials.CRUDE_OMNIUM, 40);
+        gearSet("attuned", ATTUNED_TIER, OmniumArmorMaterials.ATTUNED_OMNIUM, 44);
+        gearSet("omnium", OMNIUM_TIER, OmniumArmorMaterials.OMNIUM, 48);
+    }
 
-    public static final DeferredItem<PickaxeItem> CRUDE_PICKAXE =
-            ITEMS.register("crude_pickaxe", () -> new PickaxeItem(CRUDE_TIER, new Item.Properties()
-                    .fireResistant()
-                    .attributes(PickaxeItem.createAttributes(CRUDE_TIER, 1.0F, -2.8F))));
+    private static Tier tier(int uses, float speed, float damage, int enchantValue, Supplier<Item> repair) {
+        return new SimpleTier(BlockTags.INCORRECT_FOR_NETHERITE_TOOL, uses, speed, damage,
+                enchantValue, () -> Ingredient.of(repair.get()));
+    }
 
-    public static final DeferredItem<AxeItem> CRUDE_AXE =
-            ITEMS.register("crude_axe", () -> new AxeItem(CRUDE_TIER, new Item.Properties()
-                    .fireResistant()
-                    .attributes(AxeItem.createAttributes(CRUDE_TIER, 5.0F, -3.0F))));
+    private static DeferredItem<Item> template(String stage) {
+        String key = "upgrade.slopcraft." + stage + "_upgrade";
+        return ITEMS.register(stage + "_upgrade_smithing_template", () -> new SmithingTemplateItem(
+                Component.translatable(key + ".applies_to"),
+                Component.translatable(key + ".ingredients"),
+                Component.translatable(key),
+                Component.translatable(key + ".base_slot_description"),
+                Component.translatable(key + ".additions_slot_description"),
+                List.of(
+                        ResourceLocation.withDefaultNamespace("item/empty_armor_slot_helmet"),
+                        ResourceLocation.withDefaultNamespace("item/empty_armor_slot_chestplate"),
+                        ResourceLocation.withDefaultNamespace("item/empty_armor_slot_leggings"),
+                        ResourceLocation.withDefaultNamespace("item/empty_armor_slot_boots"),
+                        ResourceLocation.withDefaultNamespace("item/empty_slot_sword"),
+                        ResourceLocation.withDefaultNamespace("item/empty_slot_pickaxe"),
+                        ResourceLocation.withDefaultNamespace("item/empty_slot_axe"),
+                        ResourceLocation.withDefaultNamespace("item/empty_slot_shovel"),
+                        ResourceLocation.withDefaultNamespace("item/empty_slot_hoe")),
+                List.of(ResourceLocation.withDefaultNamespace("item/empty_slot_ingot"))));
+    }
 
-    public static final DeferredItem<ShovelItem> CRUDE_SHOVEL =
-            ITEMS.register("crude_shovel", () -> new ShovelItem(CRUDE_TIER, new Item.Properties()
-                    .fireResistant()
-                    .attributes(ShovelItem.createAttributes(CRUDE_TIER, 1.5F, -3.0F))));
-
-    public static final DeferredItem<HoeItem> CRUDE_HOE =
-            ITEMS.register("crude_hoe", () -> new HoeItem(CRUDE_TIER, new Item.Properties()
-                    .fireResistant()
-                    .attributes(HoeItem.createAttributes(CRUDE_TIER, -4.0F, 0.0F))));
-
-    public static final DeferredItem<ArmorItem> CRUDE_HELMET =
-            ITEMS.register("crude_helmet", () -> new ArmorItem(
-                    OmniumArmorMaterials.CRUDE_OMNIUM, ArmorItem.Type.HELMET,
-                    new Item.Properties().fireResistant()
-                            .durability(ArmorItem.Type.HELMET.getDurability(40))));
-
-    public static final DeferredItem<ArmorItem> CRUDE_CHESTPLATE =
-            ITEMS.register("crude_chestplate", () -> new ArmorItem(
-                    OmniumArmorMaterials.CRUDE_OMNIUM, ArmorItem.Type.CHESTPLATE,
-                    new Item.Properties().fireResistant()
-                            .durability(ArmorItem.Type.CHESTPLATE.getDurability(40))));
-
-    public static final DeferredItem<ArmorItem> CRUDE_LEGGINGS =
-            ITEMS.register("crude_leggings", () -> new ArmorItem(
-                    OmniumArmorMaterials.CRUDE_OMNIUM, ArmorItem.Type.LEGGINGS,
-                    new Item.Properties().fireResistant()
-                            .durability(ArmorItem.Type.LEGGINGS.getDurability(40))));
-
-    public static final DeferredItem<ArmorItem> CRUDE_BOOTS =
-            ITEMS.register("crude_boots", () -> new ArmorItem(
-                    OmniumArmorMaterials.CRUDE_OMNIUM, ArmorItem.Type.BOOTS,
-                    new Item.Properties().fireResistant()
-                            .durability(ArmorItem.Type.BOOTS.getDurability(40))));
+    private static void gearSet(String prefix, Tier tier, Holder<ArmorMaterial> material, int durabilityMultiplier) {
+        ITEMS.register(prefix + "_sword", () -> new SwordItem(tier, new Item.Properties()
+                .fireResistant().attributes(SwordItem.createAttributes(tier, 3, -2.4F))));
+        ITEMS.register(prefix + "_pickaxe", () -> new PickaxeItem(tier, new Item.Properties()
+                .fireResistant().attributes(PickaxeItem.createAttributes(tier, 1.0F, -2.8F))));
+        ITEMS.register(prefix + "_axe", () -> new AxeItem(tier, new Item.Properties()
+                .fireResistant().attributes(AxeItem.createAttributes(tier, 5.0F, -3.0F))));
+        ITEMS.register(prefix + "_shovel", () -> new ShovelItem(tier, new Item.Properties()
+                .fireResistant().attributes(ShovelItem.createAttributes(tier, 1.5F, -3.0F))));
+        ITEMS.register(prefix + "_hoe", () -> new HoeItem(tier, new Item.Properties()
+                .fireResistant().attributes(HoeItem.createAttributes(tier, -4.0F, 0.0F))));
+        for (ArmorItem.Type type : new ArmorItem.Type[]{
+                ArmorItem.Type.HELMET, ArmorItem.Type.CHESTPLATE, ArmorItem.Type.LEGGINGS, ArmorItem.Type.BOOTS}) {
+            ITEMS.register(prefix + "_" + type.getName(), () -> new ArmorItem(material, type,
+                    new Item.Properties().fireResistant().durability(type.getDurability(durabilityMultiplier))));
+        }
+    }
 
     public static final DeferredItem<net.minecraft.world.item.BlockItem> VOID_BLOCK_ITEM =
             ITEMS.registerSimpleBlockItem(SlopCraftBlocks.VOID_BLOCK);

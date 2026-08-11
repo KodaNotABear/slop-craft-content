@@ -1,0 +1,16 @@
+{
+  "result": {
+    "id": "slopcraft:omnium_sword",
+    "count": 1
+  },
+  "addition": {
+    "item": "slopcraft:omnium"
+  },
+  "type": "minecraft:smithing_transform",
+  "base": {
+    "item": "slopcraft:attuned_sword"
+  },
+  "template": {
+    "item": "slopcraft:omnium_upgrade_smithing_template"
+  }
+}

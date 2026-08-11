@@ -1,0 +1,16 @@
+{
+  "result": {
+    "id": "slopcraft:attuned_boots",
+    "count": 1
+  },
+  "addition": {
+    "item": "slopcraft:attuned_omnium"
+  },
+  "type": "minecraft:smithing_transform",
+  "base": {
+    "item": "slopcraft:crude_boots"
+  },
+  "template": {
+    "item": "slopcraft:attuned_upgrade_smithing_template"
+  }
+}

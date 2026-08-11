@@ -1,0 +1,23 @@
+{
+  "result": {
+    "id": "slopcraft:omnium",
+    "count": 2
+  },
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "e": {
+      "item": "minecraft:echo_shard"
+    },
+    "d": {
+      "item": "minecraft:dragon_breath"
+    },
+    "a": {
+      "item": "slopcraft:attuned_omnium"
+    }
+  },
+  "pattern": [
+    "aea",
+    "ede",
+    "aea"
+  ]
+}

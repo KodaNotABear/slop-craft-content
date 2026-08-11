@@ -4,8 +4,10 @@ import dev.epeterson.slopcraft.SlopCraft;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 public class OmniumTab {
@@ -15,20 +17,13 @@ public class OmniumTab {
     static {
         TABS.register("main", () -> CreativeModeTab.builder()
                 .title(Component.translatable("itemGroup.slopcraft"))
-                .icon(() -> new ItemStack(OmniumItems.CRUDE_OMNIUM.get()))
+                .icon(() -> new ItemStack(OmniumItems.OMNIUM.get()))
                 .displayItems((params, output) -> {
-                    output.accept(SlopCraftBlocks.VOID_BLOCK.get());
-                    output.accept(OmniumItems.CRUDE_OMNIUM.get());
-                    output.accept(OmniumItems.CRUDE_UPGRADE_SMITHING_TEMPLATE.get());
-                    output.accept(OmniumItems.CRUDE_SWORD.get());
-                    output.accept(OmniumItems.CRUDE_PICKAXE.get());
-                    output.accept(OmniumItems.CRUDE_AXE.get());
-                    output.accept(OmniumItems.CRUDE_SHOVEL.get());
-                    output.accept(OmniumItems.CRUDE_HOE.get());
-                    output.accept(OmniumItems.CRUDE_HELMET.get());
-                    output.accept(OmniumItems.CRUDE_CHESTPLATE.get());
-                    output.accept(OmniumItems.CRUDE_LEGGINGS.get());
-                    output.accept(OmniumItems.CRUDE_BOOTS.get());
+                    // Registration order is curated: materials, templates,
+                    // then gear per stage, then blocks.
+                    for (DeferredHolder<Item, ? extends Item> entry : OmniumItems.ITEMS.getEntries()) {
+                        output.accept(entry.get());
+                    }
                 })
                 .build());
     }

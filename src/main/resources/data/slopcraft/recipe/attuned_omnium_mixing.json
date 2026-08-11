@@ -1,0 +1,36 @@
+{
+  "type": "create:mixing",
+  "results": [
+    {
+      "id": "slopcraft:attuned_omnium",
+      "count": 2
+    }
+  ],
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "create"
+    },
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "ars_nouveau"
+    }
+  ],
+  "ingredients": [
+    {
+      "item": "slopcraft:crude_omnium"
+    },
+    {
+      "item": "slopcraft:crude_omnium"
+    },
+    {
+      "item": "ars_nouveau:source_gem"
+    },
+    {
+      "item": "ars_nouveau:source_gem"
+    },
+    {
+      "item": "minecraft:amethyst_block"
+    }
+  ]
+}

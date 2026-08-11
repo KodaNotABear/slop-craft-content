@@ -1,0 +1,23 @@
+{
+  "result": {
+    "id": "slopcraft:attuned_upgrade_smithing_template",
+    "count": 1
+  },
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "o": {
+      "item": "slopcraft:attuned_omnium"
+    },
+    "a": {
+      "item": "minecraft:amethyst_shard"
+    },
+    "t": {
+      "item": "slopcraft:crude_upgrade_smithing_template"
+    }
+  },
+  "pattern": [
+    "aoa",
+    "oto",
+    "aoa"
+  ]
+}

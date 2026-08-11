@@ -1,0 +1,23 @@
+{
+  "result": {
+    "id": "slopcraft:omnium_upgrade_smithing_template",
+    "count": 1
+  },
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "e": {
+      "item": "minecraft:echo_shard"
+    },
+    "o": {
+      "item": "slopcraft:omnium"
+    },
+    "t": {
+      "item": "slopcraft:attuned_upgrade_smithing_template"
+    }
+  },
+  "pattern": [
+    "eoe",
+    "oto",
+    "eoe"
+  ]
+}
