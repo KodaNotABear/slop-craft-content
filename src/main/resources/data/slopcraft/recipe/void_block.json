@@ -1,0 +1,1 @@
+{ "type": "minecraft:crafting_shaped", "pattern": [ "ooo", "ogo", "ooo" ], "key": { "o": { "item": "minecraft:obsidian" }, "g": { "item": "minecraft:glowstone" } }, "result": { "id": "slopcraft:void_block", "count": 8 } }

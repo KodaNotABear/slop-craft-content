@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:smithing_transform",
+  "template": {
+    "item": "slopcraft:crude_upgrade_smithing_template"
+  },
+  "base": {
+    "item": "minecraft:netherite_chestplate"
+  },
+  "result": {
+    "id": "slopcraft:crude_chestplate",
+    "count": 1
+  },
+  "addition": {
+    "item": "slopcraft:crude_omnium"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "itemGroup.slopcraft": "Omnium",
+  "item.slopcraft.crude_omnium": "Crude Omnium",
+  "item.slopcraft.crude_upgrade_smithing_template": "Smithing Template",
+  "item.slopcraft.crude_sword": "Crude Omnium Sword",
+  "item.slopcraft.crude_pickaxe": "Crude Omnium Pickaxe",
+  "item.slopcraft.crude_axe": "Crude Omnium Axe",
+  "item.slopcraft.crude_shovel": "Crude Omnium Shovel",
+  "item.slopcraft.crude_hoe": "Crude Omnium Hoe",
+  "item.slopcraft.crude_helmet": "Crude Omnium Helmet",
+  "item.slopcraft.crude_chestplate": "Crude Omnium Chestplate",
+  "item.slopcraft.crude_leggings": "Crude Omnium Leggings",
+  "item.slopcraft.crude_boots": "Crude Omnium Boots",
+  "upgrade.slopcraft.crude_upgrade": "Crude Omnium Upgrade",
+  "upgrade.slopcraft.crude_upgrade.applies_to": "Netherite Equipment",
+  "upgrade.slopcraft.crude_upgrade.ingredients": "Crude Omnium",
+  "upgrade.slopcraft.crude_upgrade.base_slot_description": "Add netherite armor, weapon, or tool",
+  "upgrade.slopcraft.crude_upgrade.additions_slot_description": "Add Crude Omnium",
+  "block.slopcraft.void_block": "Void Block"
+}
