@@ -32,18 +32,32 @@ from PIL import Image
 JAR = Path(os.environ["APPDATA"]) / "PrismLauncher/libraries/com/mojang/minecraft/1.21.1/minecraft-1.21.1-client.jar"
 RESOURCES = Path(__file__).resolve().parent.parent / "src/main/resources/assets/slopcraft/textures"
 
-# stage -> ((dark, mid, light) ramp anchors, material item name, animation)
-# animation: None, or (frames, frametime, amplitude)
+# stage -> (6 posterized stops [outline, shadow, dark, mid, light, highlight],
+#           material item name, animation (frames, frametime, amplitude) | None)
+# Discrete stops, not a gradient: vanilla materials use a handful of solid
+# colors, and continuous ramps read as washed out at 16px.
 STAGES = {
-    "crude":   (((0x3B, 0x24, 0x0E), (0xD9, 0x8F, 0x2D), (0xFF, 0xD8, 0x8A)), "crude_omnium", None),
-    "attuned": (((0x14, 0x3C, 0x40), (0x4E, 0xC8, 0xBE), (0xC8, 0xFF, 0xF4)), "attuned_omnium", (4, 12, 0.08)),
-    "omnium":  (((0x12, 0x08, 0x26), (0x66, 0x3A, 0xC8), (0xAE, 0x83, 0xF5)), "omnium", (8, 6, 0.14)),
+    "crude":   ([(0x1C, 0x0F, 0x03), (0x4A, 0x2E, 0x0C), (0x7A, 0x4C, 0x12), (0xB5, 0x76, 0x1B), (0xE3, 0xA6, 0x2E), (0xFF, 0xD2, 0x68)], "crude_omnium", None),
+    "attuned": ([(0x04, 0x19, 0x1A), (0x0C, 0x43, 0x40), (0x15, 0x7F, 0x76), (0x24, 0xB3, 0xA6), (0x55, 0xE0, 0xCE), (0xB5, 0xFF, 0xF2)], "attuned_omnium", (4, 12, 0.08)),
+    "omnium":  ([(0x0D, 0x06, 0x20), (0x25, 0x13, 0x55), (0x3D, 0x23, 0x90), (0x5F, 0x3A, 0xC8), (0x8B, 0x63, 0xEC), (0xBF, 0xA0, 0xFF)], "omnium", (8, 6, 0.14)),
 }
 
 # Omnium alone carries diagonal energy veins: a structural mark survives a
-# 16px slot where a hue shift alone can blur (attuned vs omnium metric).
-VEIN_STAGES = {"omnium": (0xE2, 0xC4, 0xFF)}
-_UNUSED = {
+# 16px slot where a hue shift alone can blur.
+VEIN_STAGES = {"omnium": (0xD9, 0xC6, 0xFF)}
+
+# Explicit classification, curated from the complete 44-color inventory of the
+# netherite sources (audited 2026-08-11). Heuristic hue/saturation thresholds
+# leaked: handle shading straddles any cutoff. These exact colors are the
+# nether-wood handles and leather straps and stay vanilla; everything else is
+# metal and gets posterized into the stage stops.
+WOOD_COLORS = {
+    (0x23, 0x10, 0x12), (0x2F, 0x21, 0x22), (0x27, 0x1C, 0x1D), (0x1B, 0x14, 0x15),
+    (0x17, 0x11, 0x11), (0x32, 0x27, 0x27), (0x24, 0x19, 0x19), (0x4F, 0x3C, 0x3E),
+    (0x73, 0x45, 0x43), (0x60, 0x34, 0x32), (0x34, 0x0E, 0x0E), (0x51, 0x15, 0x15),
+    (0x72, 0x32, 0x32), (0x65, 0x28, 0x28), (0x85, 0x42, 0x42),
+    (0x35, 0x2D, 0x2D), (0x31, 0x29, 0x2A), (0x47, 0x3E, 0x3F), (0x3C, 0x32, 0x32),
+    (0x31, 0x28, 0x28), (0x4C, 0x41, 0x43), (0x24, 0x1F, 0x20),
 }
 
 # vanilla texture -> our suffix; warm policy: 0 = keep all warm (handles,
@@ -64,21 +78,24 @@ ITEMS = {
 }
 
 
-def ramp(lum: float, anchors) -> tuple[int, int, int]:
-    """Map luminance 0..1 through a 3-stop gradient (dark, mid, light)."""
-    dark, mid, light = anchors
-    if lum < 0.5:
-        t, a, b = lum * 2, dark, mid
-    else:
-        t, a, b = (lum - 0.5) * 2, mid, light
-    return tuple(round(a[i] + (b[i] - a[i]) * t) for i in range(3))
+def posterize(lum: float, stops) -> tuple[int, int, int]:
+    """Map luminance into the discrete metal stops (outline stop excluded)."""
+    if lum <= 0.16:
+        return stops[1]
+    if lum <= 0.26:
+        return stops[2]
+    if lum <= 0.38:
+        return stops[3]
+    if lum <= 0.52:
+        return stops[4]
+    return stops[5]
 
 
-def brighten(anchors, factor: float):
-    return tuple(tuple(min(255, round(c * factor)) for c in stop) for stop in anchors)
+def brighten(stops, factor: float):
+    return [tuple(min(255, round(c * factor)) for c in stop) for stop in stops]
 
 
-def recolor(img: Image.Image, anchors, warm_rows_from: int | None = 0, keep_border: bool = True, vein=None) -> Image.Image:
+def recolor(img: Image.Image, stops, warm_rows_from: int | None = 0, keep_border: bool = True, vein=None) -> Image.Image:
     img = img.convert("RGBA")
     out = Image.new("RGBA", img.size)
 
@@ -95,29 +112,27 @@ def recolor(img: Image.Image, anchors, warm_rows_from: int | None = 0, keep_bord
                 continue
             if keep_border and any(alpha(x + dx, y + dy) == 0
                                    for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))):
-                out.putpixel((x, y), (r, g, b, a))
+                out.putpixel((x, y), (*stops[0], a))  # stage-tinted outline
                 continue
-            h, s, v = colorsys.rgb_to_hsv(r / 255, g / 255, b / 255)
-            hue_deg = h * 360
-            warm = s >= 0.20 and (hue_deg >= 340 or hue_deg <= 30)
-            if warm and warm_rows_from is not None and y >= warm_rows_from:
+            wood = (r, g, b) in WOOD_COLORS
+            if wood and warm_rows_from is not None and y >= warm_rows_from:
                 out.putpixel((x, y), (r, g, b, a))
                 continue
             lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255
             if vein is not None and lum > 0.32 and (x + y) % 4 == 0:
                 out.putpixel((x, y), (*vein, a))
             else:
-                out.putpixel((x, y), (*ramp(lum, anchors), a))
+                out.putpixel((x, y), (*posterize(lum, stops), a))
     return out
 
 
-def save_animated(base: Image.Image, anchors, warm_policy, dest: Path, frames: int, frametime: int, amplitude: float, vein=None) -> None:
+def save_animated(base: Image.Image, stops, warm_policy, dest: Path, frames: int, frametime: int, amplitude: float, vein=None) -> None:
     """Vertical strip whose ramp brightness breathes; loops cleanly."""
     import math
     strip = Image.new("RGBA", (base.width, base.height * frames))
     for i in range(frames):
         factor = 1.0 + amplitude * math.sin(2 * math.pi * i / frames)
-        frame = recolor(base, brighten(anchors, factor), warm_rows_from=warm_policy, vein=vein)
+        frame = recolor(base, brighten(stops, factor), warm_rows_from=warm_policy, vein=vein)
         strip.paste(frame, (0, base.height * i))
     strip.save(dest)
     with open(str(dest) + ".mcmeta", "w") as f:
@@ -134,23 +149,23 @@ def main() -> None:
         armor_dir = RESOURCES / "models/armor"
         armor_dir.mkdir(parents=True, exist_ok=True)
 
-        for stage, (anchors, material_name, anim) in STAGES.items():
+        for stage, (stops, material_name, anim) in STAGES.items():
             for src, (dst, warm_policy) in ITEMS.items():
                 img = load(f"assets/minecraft/textures/item/{src}.png")
                 name = material_name if dst == "MATERIAL" else dst.format(s=stage)
                 out = item_dir / f"{name}.png"
                 vein = VEIN_STAGES.get(stage)
                 if dst == "MATERIAL" and anim is not None:
-                    save_animated(img, anchors, warm_policy, out, *anim, vein=vein)
+                    save_animated(img, stops, warm_policy, out, *anim, vein=vein)
                 else:
-                    recolor(img, anchors, warm_rows_from=warm_policy, vein=vein).save(out)
+                    recolor(img, stops, warm_rows_from=warm_policy, vein=vein).save(out)
                     mcmeta = Path(str(out) + ".mcmeta")
                     if mcmeta.exists():
                         mcmeta.unlink()
 
             for layer in (1, 2):
                 img = load(f"assets/minecraft/textures/models/armor/netherite_layer_{layer}.png")
-                recolor(img, anchors, keep_border=False, vein=VEIN_STAGES.get(stage)).save(armor_dir / f"{material_name}_layer_{layer}.png")
+                recolor(img, stops, keep_border=False, vein=VEIN_STAGES.get(stage)).save(armor_dir / f"{material_name}_layer_{layer}.png")
 
             print(f"stage '{stage}': {len(ITEMS)} items + 2 armor layers" + (" (animated material)" if anim else ""))
 
