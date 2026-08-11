@@ -23,7 +23,7 @@ RESOURCES = Path(__file__).resolve().parent.parent / "src/main/resources/assets/
 
 # stage -> (dark, mid, light) luminance ramp anchors
 STAGES = {
-    "crude": ((0x2B, 0x1A, 0x08), (0xB8, 0x74, 0x24), (0xF5, 0xC9, 0x6B)),
+    "crude": ((0x3B, 0x24, 0x0E), (0xD9, 0x8F, 0x2D), (0xFF, 0xD8, 0x8A)),
 }
 
 # vanilla item texture -> our item name (per stage, {s} = stage prefix)
@@ -53,6 +53,14 @@ def ramp(lum: float, anchors) -> tuple[int, int, int]:
 
 
 def recolor(img: Image.Image, anchors) -> Image.Image:
+    """Ramp the metal, leave wood and leather alone.
+
+    Netherite metal is the low-saturation purple-grey family (hue ~300); handles and straps are saturated dark crimson (hue ~340-30, nether wood). Pixels that read as wood/leather
+    (warm hue, real saturation) keep their vanilla colors so tools do not look
+    like solid slabs of the stage metal.
+    """
+    import colorsys
+
     img = img.convert("RGBA")
     out = Image.new("RGBA", img.size)
     for y in range(img.height):
@@ -60,6 +68,11 @@ def recolor(img: Image.Image, anchors) -> Image.Image:
             r, g, b, a = img.getpixel((x, y))
             if a == 0:
                 out.putpixel((x, y), (0, 0, 0, 0))
+                continue
+            h, s, v = colorsys.rgb_to_hsv(r / 255, g / 255, b / 255)
+            hue_deg = h * 360
+            if s >= 0.20 and (hue_deg >= 340 or hue_deg <= 30):
+                out.putpixel((x, y), (r, g, b, a))  # wood / leather: keep
                 continue
             lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255
             out.putpixel((x, y), (*ramp(lum, anchors), a))

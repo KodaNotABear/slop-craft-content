@@ -1,0 +1,1 @@
+{ "replace": false, "values": [ { "id": "buildinggadgets2:gadget_building", "required": false }, { "id": "buildinggadgets2:gadget_exchanging", "required": false }, { "id": "buildinggadgets2:gadget_destruction", "required": false }, { "id": "buildinggadgets2:gadget_cut_paste", "required": false }, { "id": "buildinggadgets2:gadget_copy_paste", "required": false } ] }
