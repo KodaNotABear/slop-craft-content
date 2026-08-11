@@ -52,27 +52,42 @@ def ramp(lum: float, anchors) -> tuple[int, int, int]:
     return tuple(round(a[i] + (b[i] - a[i]) * t) for i in range(3))
 
 
-def recolor(img: Image.Image, anchors) -> Image.Image:
-    """Ramp the metal, leave wood and leather alone.
+def recolor(img: Image.Image, anchors, warm_rows_from: int | None = 0, keep_border: bool = True) -> Image.Image:
+    """Ramp the metal; keep outline, wood, and leather vanilla.
 
-    Netherite metal is the low-saturation purple-grey family (hue ~300); handles and straps are saturated dark crimson (hue ~340-30, nether wood). Pixels that read as wood/leather
-    (warm hue, real saturation) keep their vanilla colors so tools do not look
-    like solid slabs of the stage metal.
+    - Border pixels (opaque, touching transparency or the sprite edge) keep
+      their vanilla color: the dark outline is what makes an item read as
+      sitting IN the vanilla art style, and ramping it looks out of place.
+    - Warm saturated pixels (hue ~340-30: nether-wood handles, leather straps)
+      keep vanilla color, but only from row `warm_rows_from` down - the sword
+      blade carries warm shading that must ramp, while its hilt must not.
+      None disables warm preservation entirely.
     """
     import colorsys
 
     img = img.convert("RGBA")
     out = Image.new("RGBA", img.size)
+
+    def alpha(x: int, y: int) -> int:
+        if x < 0 or y < 0 or x >= img.width or y >= img.height:
+            return 0
+        return img.getpixel((x, y))[3]
+
     for y in range(img.height):
         for x in range(img.width):
             r, g, b, a = img.getpixel((x, y))
             if a == 0:
                 out.putpixel((x, y), (0, 0, 0, 0))
                 continue
+            if keep_border and any(alpha(x + dx, y + dy) == 0
+                                   for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))):
+                out.putpixel((x, y), (r, g, b, a))
+                continue
             h, s, v = colorsys.rgb_to_hsv(r / 255, g / 255, b / 255)
             hue_deg = h * 360
-            if s >= 0.20 and (hue_deg >= 340 or hue_deg <= 30):
-                out.putpixel((x, y), (r, g, b, a))  # wood / leather: keep
+            warm = s >= 0.20 and (hue_deg >= 340 or hue_deg <= 30)
+            if warm and warm_rows_from is not None and y >= warm_rows_from:
+                out.putpixel((x, y), (r, g, b, a))
                 continue
             lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255
             out.putpixel((x, y), (*ramp(lum, anchors), a))
@@ -89,13 +104,14 @@ def main() -> None:
             item_dir.mkdir(parents=True, exist_ok=True)
             for src, dst in ITEMS.items():
                 img = load(f"assets/minecraft/textures/item/{src}.png")
-                recolor(img, anchors).save(item_dir / f"{dst.format(s=stage)}.png")
+                warm_from = 11 if src == "netherite_sword" else 0
+                recolor(img, anchors, warm_rows_from=warm_from).save(item_dir / f"{dst.format(s=stage)}.png")
 
             armor_dir = RESOURCES / "models/armor"
             armor_dir.mkdir(parents=True, exist_ok=True)
             for layer in (1, 2):
                 img = load(f"assets/minecraft/textures/models/armor/netherite_layer_{layer}.png")
-                recolor(img, anchors).save(armor_dir / f"{stage}_omnium_layer_{layer}.png")
+                recolor(img, anchors, keep_border=False).save(armor_dir / f"{stage}_omnium_layer_{layer}.png")
 
             print(f"stage '{stage}': {len(ITEMS)} items + 2 armor layers")
 
