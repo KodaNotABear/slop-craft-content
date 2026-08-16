@@ -1,6 +1,6 @@
-package dev.epeterson.slopcraft.index;
+package studio.akuro.slopcraft.index;
 
-import dev.epeterson.slopcraft.SlopCraft;
+import studio.akuro.slopcraft.SlopCraft;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;

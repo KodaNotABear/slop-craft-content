@@ -1,6 +1,6 @@
-package dev.epeterson.slopcraft.index;
+package studio.akuro.slopcraft.index;
 
-import dev.epeterson.slopcraft.SlopCraft;
+import studio.akuro.slopcraft.SlopCraft;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;

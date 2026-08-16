@@ -1,6 +1,6 @@
-package dev.epeterson.slopcraft.index;
+package studio.akuro.slopcraft.index;
 
-import dev.epeterson.slopcraft.SlopCraft;
+import studio.akuro.slopcraft.SlopCraft;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;

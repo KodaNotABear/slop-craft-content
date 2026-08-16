@@ -1,6 +1,6 @@
-package dev.epeterson.slopcraft.content;
+package studio.akuro.slopcraft.content;
 
-import dev.epeterson.slopcraft.SlopCraft;
+import studio.akuro.slopcraft.SlopCraft;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;

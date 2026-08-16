@@ -15,6 +15,14 @@ base {
     archivesName = mod_id
 }
 
+repositories {
+    maven { url = 'https://maven.blamejared.com' }
+}
+
+dependencies {
+    compileOnly "com.hollingsworth.ars_nouveau:ars_nouveau-1.21.1:5.13.0.1392"
+}
+
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 neoForge {

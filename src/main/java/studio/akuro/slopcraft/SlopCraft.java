@@ -1,14 +1,14 @@
-package dev.epeterson.slopcraft;
+package studio.akuro.slopcraft;
 
-import dev.epeterson.slopcraft.index.OmniumArmorMaterials;
-import dev.epeterson.slopcraft.index.SlopCraftBlocks;
-import dev.epeterson.slopcraft.index.OmniumItems;
-import dev.epeterson.slopcraft.index.OmniumTab;
+import studio.akuro.slopcraft.index.OmniumArmorMaterials;
+import studio.akuro.slopcraft.index.SlopCraftBlocks;
+import studio.akuro.slopcraft.index.OmniumItems;
+import studio.akuro.slopcraft.index.OmniumTab;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.common.NeoForge;
-import dev.epeterson.slopcraft.content.SelfCharging;
+import studio.akuro.slopcraft.content.SelfCharging;
 
 @Mod(SlopCraft.MOD_ID)
 public class SlopCraft {
