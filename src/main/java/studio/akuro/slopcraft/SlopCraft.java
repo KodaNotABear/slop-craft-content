@@ -1,5 +1,7 @@
 package studio.akuro.slopcraft;
 
+import com.hollingsworth.arsnouveau.api.registry.GlyphRegistry;
+import studio.akuro.slopcraft.content.EffectDomain;
 import studio.akuro.slopcraft.index.OmniumArmorMaterials;
 import studio.akuro.slopcraft.index.SlopCraftBlocks;
 import studio.akuro.slopcraft.index.OmniumItems;
@@ -20,5 +22,6 @@ public class SlopCraft {
         OmniumItems.register(modBus);
         OmniumTab.register(modBus);
         NeoForge.EVENT_BUS.addListener(SelfCharging::onPlayerTick);
+        GlyphRegistry.registerSpell(EffectDomain.INSTANCE);
     }
 }
