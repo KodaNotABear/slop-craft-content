@@ -16,6 +16,7 @@ public class SlopCraft {
     public SlopCraft(ModContainer container, IEventBus modBus) {
         SlopCraftBlocks.register(modBus);
         SlopCraftBlockEntities.register(modBus);
+        SlopCraftEntities.register(modBus);
         OmniumArmorMaterials.register(modBus);
         OmniumItems.register(modBus);
         OmniumTab.register(modBus);

@@ -50,5 +50,7 @@
   "upgrade.slopcraft.omnium_upgrade.base_slot_description": "Add Attuned Omnium armor, weapon, or tool",
   "upgrade.slopcraft.omnium_upgrade.additions_slot_description": "Add Omnium",
   "slopcraft.glyph_desc.glyph_domain": "Constantly activates the remainder of the spell for the duration",
-  "slopcraft.glyph_name.glyph_domain": "Domain"
+  "slopcraft.glyph_name.glyph_domain": "Domain",
+  "block.slopcraft.domain_wall": "Domain Wall",
+  "entity.slopcraft.domain": "Domain"
 }

@@ -15,6 +15,10 @@ public class DomainBlockEntity extends BlockEntity {
         super(SlopCraftBlockEntities.DOMAIN.get(), pos, state);
     }
 
+    public void setLifespan(int ticks) {
+        this.ticksLeft = ticks;
+    }
+
     public void tick(Level level, BlockPos pos) {
         if (--ticksLeft <= 0) {
             level.removeBlock(pos, false);

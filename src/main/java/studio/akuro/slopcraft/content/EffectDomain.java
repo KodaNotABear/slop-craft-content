@@ -10,13 +10,15 @@ import net.minecraft.world.level.block.LightBlock;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import studio.akuro.slopcraft.index.SlopCraftBlocks;
+import studio.akuro.slopcraft.index.SlopCraftEntities;
 
 import java.util.Set;
 
 public class EffectDomain extends AbstractEffect {
-    public static final int r = 10;
+    public static final int RADIUS = 10;
     public static final EffectDomain INSTANCE = new EffectDomain();
     private EffectDomain() {
         super(ResourceLocation.fromNamespaceAndPath("slopcraft", "glyph_domain"), "Deploy Domain");
@@ -53,30 +55,13 @@ public class EffectDomain extends AbstractEffect {
 
         spellContext.setCanceled(true);
 
-        for (int dx = -r; dx <= r; dx++) {
-            for (int dy = -r; dy <= r; dy++) {
-                for (int dz = -r; dz <= r; dz++) {
-                    double dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
-                    if (Math.round(dist) == r) {
-                        BlockPos pos = center.offset(dx, dy, dz);
-                        if (!world.getBlockState(pos).isAir()) {
-                            continue;
-                        }
-                        world.setBlockAndUpdate(pos, SlopCraftBlocks.DOMAIN_WALL.get().defaultBlockState());
-                    }
-                    if (dx % 4 == 0 && dy % 4 == 0 && dz % 4 == 0) {
-                        BlockPos pos = center.offset(dx, dy, dz);
-                        if (!world.getBlockState(pos).isAir()) {
-                            continue;
-                        }
-                        world.setBlockAndUpdate(pos, SlopCraftBlocks.VOID_LIGHT.get().defaultBlockState());
-                    }
-                }
-            }
-        }
+        DomainEntity domain = new DomainEntity(SlopCraftEntities.DOMAIN.get(), world);
+        domain.setPos(Vec3.atCenterOf(center));
+        domain.configure(RADIUS);
+        world.addFreshEntity(domain);
 
         if (!remainder.isEmpty()) {
-            for (LivingEntity entity : world.getEntitiesOfClass(LivingEntity.class, new AABB(center).inflate(r))) {
+            for (LivingEntity entity : world.getEntitiesOfClass(LivingEntity.class, new AABB(center).inflate(RADIUS))) {
                 if (entity == shooter) {
                     continue;
                 } else {
