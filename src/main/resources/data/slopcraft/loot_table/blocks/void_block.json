@@ -1,1 +1,0 @@
-{ "type": "minecraft:block", "pools": [ { "rolls": 1, "entries": [ { "type": "minecraft:item", "name": "slopcraft:void_block" } ], "conditions": [ { "condition": "minecraft:survives_explosion" } ] } ], "random_sequence": "slopcraft:blocks/void_block" }

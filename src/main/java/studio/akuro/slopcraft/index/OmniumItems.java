@@ -95,9 +95,6 @@ public class OmniumItems {
         }
     }
 
-    public static final DeferredItem<net.minecraft.world.item.BlockItem> VOID_BLOCK_ITEM =
-            ITEMS.registerSimpleBlockItem(SlopCraftBlocks.VOID_BLOCK);
-
     public static void register(IEventBus bus) {
         ITEMS.register(bus);
     }

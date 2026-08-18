@@ -33,10 +33,3 @@ Crude, Attuned, and true Omnium - the same gear, thrice reforged.
     ordering="AFTER"
     side="BOTH"
 
-[[dependencies.${mod_id}]]
-    modId="ars_nouveau"
-    type="required"
-    versionRange="[5.13.0,]"
-    ordering="NONE"
-    side="BOTH"
-
