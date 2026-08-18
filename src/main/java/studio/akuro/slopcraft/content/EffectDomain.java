@@ -5,6 +5,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LightBlock;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
@@ -14,7 +16,7 @@ import studio.akuro.slopcraft.index.SlopCraftBlocks;
 import java.util.Set;
 
 public class EffectDomain extends AbstractEffect {
-    public static final int r = 5;
+    public static final int r = 10;
     public static final EffectDomain INSTANCE = new EffectDomain();
     private EffectDomain() {
         super(ResourceLocation.fromNamespaceAndPath("slopcraft", "glyph_domain"), "Deploy Domain");
@@ -45,26 +47,30 @@ public class EffectDomain extends AbstractEffect {
         return setOf(SpellSchools.CONJURATION);
     }
 
-    @Override
-    public void onResolveBlock(BlockHitResult rayTraceResult, Level world, LivingEntity shooter, SpellStats spellStats, SpellContext spellContext, SpellResolver resolver) {
+    private void deploy(BlockPos center, Level world, LivingEntity shooter, SpellContext spellContext, SpellResolver spellResolver) {
 
         Spell remainder = spellContext.getRemainingSpell();
 
         spellContext.setCanceled(true);
 
-        BlockPos center = rayTraceResult.getBlockPos();
-
         for (int dx = -r; dx <= r; dx++) {
             for (int dy = -r; dy <= r; dy++) {
                 for (int dz = -r; dz <= r; dz++) {
                     double dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
-                        if (Math.round(dist) == r) {
-                            BlockPos pos = center.offset(dx, dy, dz);
-                            if (!world.getBlockState(pos).isAir()) {
-                                continue;
-                            }
-                            world.setBlockAndUpdate(pos, SlopCraftBlocks.VOID_BLOCK.get().defaultBlockState());
+                    if (Math.round(dist) == r) {
+                        BlockPos pos = center.offset(dx, dy, dz);
+                        if (!world.getBlockState(pos).isAir()) {
+                            continue;
                         }
+                        world.setBlockAndUpdate(pos, SlopCraftBlocks.DOMAIN_WALL.get().defaultBlockState());
+                    }
+                    if (dx % 4 == 0 && dy % 4 == 0 && dz % 4 == 0) {
+                        BlockPos pos = center.offset(dx, dy, dz);
+                        if (!world.getBlockState(pos).isAir()) {
+                            continue;
+                        }
+                        world.setBlockAndUpdate(pos, SlopCraftBlocks.VOID_LIGHT.get().defaultBlockState());
+                    }
                 }
             }
         }
@@ -75,10 +81,22 @@ public class EffectDomain extends AbstractEffect {
                     continue;
                 } else {
                     SpellContext newContext = spellContext.clone().withSpell(remainder);
-                    resolver.getNewResolver(newContext).onResolveEffect(world, new EntityHitResult(entity));
+                    spellResolver.getNewResolver(newContext).onResolveEffect(world, new EntityHitResult(entity));
                 }
             }
         }
 
+    }
+
+    @Override
+    public void onResolveBlock(BlockHitResult rayTraceResult, Level world, LivingEntity shooter, SpellStats spellStats, SpellContext spellContext, SpellResolver resolver) {
+
+        deploy(rayTraceResult.getBlockPos(), world, shooter, spellContext, resolver);
+
+    }
+
+    @Override
+    public void onResolveEntity(EntityHitResult rayTraceResult, Level world, LivingEntity shooter, SpellStats spellStats, SpellContext spellContext, SpellResolver spellResolver) {
+        deploy(rayTraceResult.getEntity().blockPosition(), world, shooter, spellContext, spellResolver);
     }
 }

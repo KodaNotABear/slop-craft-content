@@ -2,10 +2,7 @@ package studio.akuro.slopcraft;
 
 import com.hollingsworth.arsnouveau.api.registry.GlyphRegistry;
 import studio.akuro.slopcraft.content.EffectDomain;
-import studio.akuro.slopcraft.index.OmniumArmorMaterials;
-import studio.akuro.slopcraft.index.SlopCraftBlocks;
-import studio.akuro.slopcraft.index.OmniumItems;
-import studio.akuro.slopcraft.index.OmniumTab;
+import studio.akuro.slopcraft.index.*;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
@@ -18,6 +15,7 @@ public class SlopCraft {
 
     public SlopCraft(ModContainer container, IEventBus modBus) {
         SlopCraftBlocks.register(modBus);
+        SlopCraftBlockEntities.register(modBus);
         OmniumArmorMaterials.register(modBus);
         OmniumItems.register(modBus);
         OmniumTab.register(modBus);
